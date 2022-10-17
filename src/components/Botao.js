@@ -1,13 +1,15 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-
-
 export const Botao = (props) => {
-  return (
+
+    // Destruct não funcionou...
+    //const [ titulo, funcao ] = props;
+
+    return (
     <View>
         <TouchableOpacity style={styles.btEntrar} onPress={props.funcao}>
-            <Text style={styles.btTextEntrar}>Entrar</Text>
+            <Text style={styles.btTextEntrar}>{props.titulo}</Text>
         </TouchableOpacity>
     </View>
   );
@@ -21,7 +23,6 @@ const styles = StyleSheet.create({
         TextAlign: 'center',
         height: 35,
         width: 115,
-        marginTop: 50
     },
     btTextEntrar: {
         fontSize: 15,

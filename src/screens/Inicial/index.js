@@ -10,21 +10,23 @@ import { SafeAreaView,
     StatusBar,
     ImageBackground } 
 from "react-native";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from '../../../config/firebase';
+import { Ionicons } from '@expo/vector-icons';
 
-//import { Botao } from "../../components/Botao";
-
+//Assets:
 import logo from '../../assets/iconVaccine.png';
 import backgroundVaccine from '../../assets/backgroundVaccine.jpeg';
+
+//Components:
+import { Botao } from "../../components/Botao";
 
 const Inicial = (props) => {    
 
     const [email, setEmail]  = useState();
     const [password, setPassword] = useState();
-    const [hidePass] = useState(true);
-
-    const goHome = () => {
-        props.navigation.navigate('Home');
-    }
+    const [message,setMessage] = useState();
+    const [verSenha,setVerSenha] = useState(true);
 
     const goNewAccount = () => {
         props.navigation.navigate('CreateAccount');
@@ -33,6 +35,48 @@ const Inicial = (props) => {
     const goForget = () => {
         props.navigation.navigate('ForgetPassword');
     }
+
+    const loginUsuario = (email,password) => {
+        signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            // Signed in
+            // ...
+            props.navigation.navigate('Home');
+            
+            setEmail("");
+            setPassword("");
+            setMessage("");
+        })
+        .catch((error) => {
+            const errorMessage = error.message;
+            setMessage(getMessageError(errorMessage));
+            console.log(errorMessage)
+        });
+    }
+
+        const getMessageError = (code) => {
+            switch(code){
+                case "auth/user-not-found":
+                    return "Usuário não cadastrado.";
+                case "auth/wrong-password":
+                    return "Senha incorreta."
+                case "auth/invalid-email":
+                    return "E-mail inválido."
+                default:
+                    return "Usuário ou Senha incorretos."
+            }
+        }
+
+        const renderMessage = () => {
+            if(!message)
+            return null;
+    
+            return(
+                <View>
+                    <Text style={styles.erroEmail}>{message}</Text>
+                </View>
+            );
+        }
 
     return(
         <SafeAreaView>
@@ -52,13 +96,24 @@ const Inicial = (props) => {
                     </View>
                     <View style={styles.contInput}>
                         <Text style={styles.text}>Senha:</Text>
-                        <TextInput value={password} onChangeText={setPassword} style={styles.TextInput} secureTextEntry={hidePass} />
+                        <TextInput value={password} onChangeText={setPassword} style={styles.TextInputPassword} secureTextEntry={verSenha} />
+                        <View style={styles.olho}>
+                            <TouchableOpacity onPress={()=> {
+                                if(verSenha == true)
+                                    setVerSenha(false)
+                                else
+                                    setVerSenha(true)
+                            }}>
+                                <Ionicons name='eye' size={25} color={'#999999'}/>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
+
+                {renderMessage()}
+                
                 <View style={styles.contBt}>
-                    <TouchableOpacity style={styles.btEntrar} onPress={goHome}>
-                        <Text style={styles.btTextEntrar}>Entrar</Text>
-                    </TouchableOpacity>
+                    <Botao titulo="Entrar" funcao={() =>{loginUsuario(email,password)}}/>
                     <TouchableOpacity style={styles.btNew} onPress={goNewAccount}>
                         <Text style={styles.btTextNew}>Criar minha conta</Text>
                     </TouchableOpacity>
@@ -118,6 +173,16 @@ const styles = StyleSheet.create({
         width: 250,
         height: 31,
         backgroundColor: '#ffff',
+        color: '#3F92C5'
+    },
+    TextInputPassword: {
+        fontSize: 15,
+        marginLeft: 5,
+        paddingLeft: 5,
+        width: 220,
+        height: 31,
+        backgroundColor: '#ffff',
+        color: '#3F92C5'
     },
     btEntrar: {
         borderColor: '#37BD6D',
@@ -171,6 +236,18 @@ const styles = StyleSheet.create({
         paddingBottom: 8,
         paddingLeft: 12,
         paddingRight: 12,
+    },
+    olho:{
+        backgroundColor: '#ffff',
+        height: 31,
+        alignItems: 'center',
+        paddingRight: 5
+    },
+    erroEmail:{
+        fontFamily: 'Roboto-Regular',
+        fontSize: 12,
+        color: '#FF5353',
+        alignItems: 'flex-end',
     },
 })
 
